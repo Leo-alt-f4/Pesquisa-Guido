@@ -1,26 +1,26 @@
+import { useState } from 'react';
 import { BarChart3, Users, Star, TrendingUp, Download, Eye, Calendar, Phone, Mail, Award } from 'lucide-react';
 
 export default function AdminPanel({ responses, isDarkMode }) {
   const [selectedResponse, setSelectedResponse] = useState(null);
 
-  // Calcular estatísticas
   const stats = {
     totalResponses: responses.length,
     averageRating: responses.length > 0 
-      ? (responses.reduce((sum, r) => sum + (parseInt(r.serviceQuality) || 0), 0) / responses.length).toFixed(1)
+      ? (responses.reduce((sum, r) => sum + parseInt(r.serviceQuality || 0), 0) / responses.length).toFixed(1)
       : 0,
-    recommendationRate: responses.length > 0 
+    recommendationRate: responses.length > 0
       ? Math.round((responses.filter(r => r.recommendation === 'sim').length / responses.length) * 100)
       : 0,
     satisfactionDistribution: responses.reduce((acc, r) => {
-      const satisfaction = r.overallSatisfaction || 'nao_informado';
-      acc[satisfaction] = (acc[satisfaction] || 0) + 1;
+      acc[r.overallSatisfaction] = (acc[r.overallSatisfaction] || 0) + 1;
       return acc;
     }, {}),
     serviceTypes: responses.reduce((acc, r) => {
       if (r.serviceType) {
         r.serviceType.split(',').forEach(type => {
-          acc[type.trim()] = (acc[type.trim()] || 0) + 1;
+          const trimmedType = type.trim();
+          acc[trimmedType] = (acc[trimmedType] || 0) + 1;
         });
       }
       return acc;
@@ -28,14 +28,56 @@ export default function AdminPanel({ responses, isDarkMode }) {
   };
 
   const serviceTypeLabels = {
-    'manicure': 'Manicure',
-    'pedicure': 'Pedicure',
-    'sobrancelha': 'Design de Sobrancelha',
-    'cilios': 'Extensão de Cílios',
-    'depilacao': 'Depilação',
-    'limpeza_pele': 'Limpeza de Pele',
-    'massagem': 'Massagem',
-    'outros': 'Outros'
+    hospedagem: 'Hospedagem na Casa GUIDO',
+    transporte: 'Transporte para tratamento',
+    medicamentos: 'Auxílio com medicamentos',
+    terapias: 'Terapias e apoio psicológico',
+    educacao: 'Apoio educacional',
+    alimentacao: 'Refeições e alimentação',
+    outros: 'Outros serviços'
+  };
+
+  const exportData = () => {
+    // Helper function to properly escape CSV values
+    const escapeCSV = (value) => {
+      if (value == null || value === undefined) return '';
+      const str = String(value);
+      // If the value contains comma, quote, or newline, wrap in quotes and escape internal quotes
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    // Create CSV content with proper UTF-8 BOM for Excel compatibility
+    const headers = ['Nome', 'Email', 'Telefone', 'Tipo de Serviço', 'Satisfação Geral', 'Qualidade (Estrelas)', 'Recomendaria', 'Melhorias', 'Comentários', 'Data'];
+    const csvRows = [
+      headers.map(escapeCSV).join(','),
+      ...responses.map(r => [
+        escapeCSV(r.name),
+        escapeCSV(r.email),
+        escapeCSV(r.phone),
+        escapeCSV(r.serviceType ? r.serviceType.split(',').map(type => serviceTypeLabels[type.trim()] || type.trim()).join('; ') : ''),
+        escapeCSV(r.overallSatisfaction?.replace('_', ' ') || ''),
+        escapeCSV(r.serviceQuality),
+        escapeCSV(r.recommendation === 'sim' ? 'Sim' : r.recommendation === 'nao' ? 'Não' : 'Talvez'),
+        escapeCSV(r.improvements ? r.improvements.split(',').join('; ') : ''),
+        escapeCSV(r.additionalComments),
+        escapeCSV(new Date(r.timestamp).toLocaleString('pt-BR'))
+      ].join(','))
+    ];
+    
+    const csvContent = csvRows.join('\n');
+    
+    // Add UTF-8 BOM for proper Excel encoding
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `pesquisa_satisfacao_casa_guido_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   return (
@@ -135,8 +177,8 @@ export default function AdminPanel({ responses, isDarkMode }) {
                 <span>Baixar CSV</span>
               </button>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-blue-500" />
+            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-purple-500" />
             </div>
           </div>
         </div>
@@ -157,19 +199,18 @@ export default function AdminPanel({ responses, isDarkMode }) {
             {Object.entries(stats.satisfactionDistribution).map(([level, count]) => {
               const percentage = stats.totalResponses > 0 ? (count / stats.totalResponses) * 100 : 0;
               const labels = {
-                'muito_satisfeito': 'Muito Satisfeito',
-                'satisfeito': 'Satisfeito',
-                'neutro': 'Neutro',
-                'insatisfeito': 'Insatisfeito',
-                'muito_insatisfeito': 'Muito Insatisfeito'
+                muito_insatisfeito: 'Muito Insatisfeito',
+                insatisfeito: 'Insatisfeito',
+                neutro: 'Neutro',
+                satisfeito: 'Satisfeito',
+                muito_satisfeito: 'Muito Satisfeito'
               };
-              
               const colors = {
-                'muito_satisfeito': 'bg-green-500',
-                'satisfeito': 'bg-green-400',
-                'neutro': 'bg-yellow-400',
-                'insatisfeito': 'bg-orange-400',
-                'muito_insatisfeito': 'bg-red-500'
+                muito_insatisfeito: 'bg-red-400',
+                insatisfeito: 'bg-orange-400',
+                neutro: 'bg-yellow-400',
+                satisfeito: 'bg-blue-400',
+                muito_satisfeito: 'bg-green-400'
               };
               
               return (
@@ -309,7 +350,7 @@ export default function AdminPanel({ responses, isDarkMode }) {
                           isDarkMode ? 'text-gray-200' : 'text-gray-700'
                         }`}>
                           {response.serviceType 
-                            ? response.serviceType.split(',').map(type => serviceTypeLabels[type] || type).join(', ')
+                            ? response.serviceType.split(',').map(type => serviceTypeLabels[type.trim()] || type.trim()).join(', ')
                             : 'Não especificado'
                           }
                         </span>
@@ -350,9 +391,9 @@ export default function AdminPanel({ responses, isDarkMode }) {
                             <Star
                               key={i}
                               className={`w-4 h-4 ${
-                                i < (parseInt(response.serviceQuality) || 0)
+                                i < parseInt(response.serviceQuality || 0)
                                   ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
+                                  : 'text-pink-300'
                               }`}
                             />
                           ))}
@@ -429,7 +470,7 @@ export default function AdminPanel({ responses, isDarkMode }) {
                     isDarkMode ? 'text-gray-200' : 'text-gray-700'
                   }`}>
                     {selectedResponse.serviceType 
-                      ? selectedResponse.serviceType.split(',').map(type => serviceTypeLabels[type] || type).join(', ')
+                      ? selectedResponse.serviceType.split(',').map(type => serviceTypeLabels[type.trim()] || type.trim()).join(', ')
                       : 'Não especificado'
                     }
                   </p>
@@ -493,47 +534,4 @@ export default function AdminPanel({ responses, isDarkMode }) {
       )}
     </div>
   );
-
-  const exportData = () => {
-    // Helper function to properly escape CSV values
-    const escapeCSV = (value) => {
-      if (value == null || value === undefined) return '';
-      const str = String(value);
-      // If the value contains comma, quote, or newline, wrap in quotes and escape internal quotes
-      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
-
-    // Create CSV content with proper UTF-8 BOM for Excel compatibility
-    const headers = ['Nome', 'Email', 'Telefone', 'Tipo de Serviço', 'Satisfação Geral', 'Qualidade (Estrelas)', 'Recomendaria', 'Melhorias', 'Comentários', 'Data'];
-    const csvRows = [
-      headers.map(escapeCSV).join(','),
-      ...responses.map(r => [
-        escapeCSV(r.name),
-        escapeCSV(r.email),
-        escapeCSV(r.phone),
-        escapeCSV(r.serviceType ? r.serviceType.split(',').map(type => serviceTypeLabels[type] || type).join('; ') : ''),
-        escapeCSV(r.overallSatisfaction?.replace('_', ' ') || ''),
-        escapeCSV(r.serviceQuality),
-        escapeCSV(r.recommendation === 'sim' ? 'Sim' : r.recommendation === 'nao' ? 'Não' : 'Talvez'),
-        escapeCSV(r.improvements ? r.improvements.split(',').join('; ') : ''),
-        escapeCSV(r.additionalComments),
-        escapeCSV(new Date(r.timestamp).toLocaleString('pt-BR'))
-      ].join(','))
-    ];
-    
-    const csvContent = csvRows.join('\n');
-    
-    // Add UTF-8 BOM for proper Excel encoding
-    const BOM = '\uFEFF';
-    const csvWithBOM = BOM + csvContent;
-
-    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `pesquisa_satisfacao_casa_guido_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
 }

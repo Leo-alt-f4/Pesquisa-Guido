@@ -138,10 +138,6 @@ export default function SurveyForm({ onSubmit }) {
           </p>
         </div>
         
-        <p className="text-pink-100 text-lg leading-relaxed">
-          Sua avaliação nos ajuda a continuar oferecendo o melhor cuidado e apoio para crianças e adolescentes (0-19 anos) em tratamento oncológico e suas famílias.
-        </p>
-      </div>
 
       <div className="bg-white rounded-3xl shadow-xl border border-pink-100 overflow-hidden">        
         <form onSubmit={handleSubmit} className="p-10 space-y-10">

@@ -1,7 +1,7 @@
 <div>
                 <div className="md:col-span-2">
                   <label className="block text-base font-bold text-gray-700 mb-4">
-                    Tipos de serviços utilizados (selecione todos que se aplicam)
+                    Tipos de serviços utilizados (selecione todos que se aplicam) *
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
@@ -31,5 +31,12 @@
                       </label>
                     ))}
                   </div>
+                  {/* Campo oculto para validação obrigatória */}
+                  <input
+                    type="hidden"
+                    value={formData.serviceType}
+                    required
+                    onChange={() => {}}
+                  />
                 </div>
           </div>

@@ -216,8 +216,6 @@ export default function SurveyForm({ onSubmit }) {
                   onChange={() => {}}
                 />
               </div>
-            </div>
-          </div>
 
             {/* Qualidade do atendimento */}
             <div>

@@ -219,43 +219,6 @@ export default function SurveyForm({ onSubmit }) {
             </div>
           </div>
 
-          {/* Avaliação */}
-          <div className="space-y-10">
-            {/* Satisfação geral */}
-            <div>
-              <label className="block text-xl font-bold text-gray-800 mb-6">
-                Como você avalia sua satisfação geral com os serviços da Casa GUIDO? *
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {[
-                  { value: 'muito_insatisfeito', label: 'Muito Insatisfeito', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-600', borderColor: 'border-red-300' },
-                  { value: 'insatisfeito', label: 'Insatisfeito', color: 'orange', bgColor: 'bg-orange-100', textColor: 'text-orange-600', borderColor: 'border-orange-300' },
-                  { value: 'neutro', label: 'Neutro', color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-600', borderColor: 'border-yellow-300' },
-                  { value: 'satisfeito', label: 'Satisfeito', color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-600', borderColor: 'border-blue-300' },
-                  { value: 'muito_satisfeito', label: 'Muito Satisfeito', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-600', borderColor: 'border-green-300' }
-                ].map((option) => (
-                  <label key={option.value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="overallSatisfaction"
-                      value={option.value}
-                      checked={formData.overallSatisfaction === option.value}
-                      onChange={(e) => handleChange('overallSatisfaction', e.target.value)}
-                      className="sr-only"
-                      required
-                    />
-                    <div className={`p-5 rounded-2xl text-center font-bold transition-all border-2 shadow-md hover:shadow-lg text-base ${
-                      formData.overallSatisfaction === option.value
-                        ? `${option.bgColor} ${option.textColor} ${option.borderColor} shadow-lg transform scale-105`
-                        : 'bg-white text-gray-600 border-pink-200 hover:bg-pink-50 hover:border-pink-300'
-                    }`}>
-                      {option.label}
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
             {/* Qualidade do atendimento */}
             <div>
               <label className="block text-xl font-bold text-gray-800 mb-6">

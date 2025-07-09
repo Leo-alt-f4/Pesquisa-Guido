@@ -216,6 +216,14 @@ export default function SurveyForm({ onSubmit }) {
                   onChange={() => {}}
                 />
               </div>
+            </div>
+            
+            {/* Satisfação geral */}
+            <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-3xl p-8 border border-pink-200">
+              <h3 className="text-2xl font-bold text-gray-700 mb-6 flex items-center space-x-3">
+                <Award className="w-6 h-6 text-pink-500" />
+                <span>Sua Avaliação</span>
+              </h3>
 
             {/* Qualidade do atendimento */}
             <div>
